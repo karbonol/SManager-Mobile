@@ -2,10 +2,6 @@ import React, { Component } from 'react';
 import { Image, TextInput, View } from 'react-native';
 
 export class Email extends Component {
-    onTextChange(text) {
-        this.setState({ 'username': text });
-        this.props.onChange('username', text)
-    }
     reset() {
         this.username.clear();
     }
@@ -20,7 +16,7 @@ export class Email extends Component {
                     underlineColorAndroid='transparent'
                     ref={component => { this.username = component }}
                     /*intitalize username as base component*/
-                    onChangeText={(text) => this.onTextChange(text)} />
+                    onChangeText={(text) => this.props.onChange('username', text)} />
             </View>
         )
     }

@@ -1,15 +1,22 @@
 import React, { Component } from 'react';
-import { TableColoumn } from './TableColoumn';
-import { AsyncStorage, ScrollView, View } from 'react-native';
+import { TableRow } from './TableRow';
+import { AsyncStorage, FlatList, View,Text } from 'react-native';
 export class MarksTable extends Component {
     Name = [];
     Written = [];
     practical = [];
     assignment = [];
     total = [];
-    baseID = "";
-    getStudentBaseId() {
-        fetch(config.serverUrl + '/marks/student/' + '975674321v',
+    userbaseID = "";
+    studentBaseID=""
+    constructor(props) {
+        super(props);
+        this.state={
+            'marksInfo':[]
+        }
+    }
+    getStudentBaseId(authKey) {
+        fetch(config.serverUrl + '/manage/student/' + this.userbaseID,
             {
                 method: 'GET',
                 headers: {
@@ -18,14 +25,16 @@ export class MarksTable extends Component {
                     'Authorization': authKey
                 }
             }).then((response) => {
+                console.log('actual input');
+                console.log(response);
                 response.json().then((JSONObj) => {
-                    console.log(JSONObj);
+                    this.studentBaseID = JSONObj.base_no;
+                    this.loadData(authKey);
                 });
             });
     }
     loadData(authKey) {
-        console.log('key ' + authKey);
-        fetch(config.serverUrl + '/marks/student/' + this.baseID,
+        fetch(config.serverUrl + '/marks/student/' + this.studentBaseID,
             {
                 method: 'GET',
                 headers: {
@@ -34,35 +43,46 @@ export class MarksTable extends Component {
                     'Authorization': authKey
                 }
             }).then((response) => {
+                console.log(response);
                 response.json().then((JSONObj) => {
+                    console.log('below');
+                    console.log(JSONObj);
+                    data=[{subject:'Subject',written:'written',practical:'practical',assignment:'assignment',total:'total'}];
                     for (let index = 0; index < JSONObj.length; index++) {
-                        console.log(JSONObj[index]);
-                        this.Name.push(JSONObj[index].subject_id.subject_name);
-                        this.Written.push(JSONObj[index].result.paper);
-                        this.practical.push(JSONObj[index].result.practical);
-                        this.total.push(JSONObj[index].total);
+                        data.push({
+                            subject:JSONObj[index].subject_id.subject_name,
+                            written:JSONObj[index].result.paper,
+                            practical:JSONObj[index].result.practical,
+                            assignment:JSONObj[index].result.assignment,
+                            total:JSONObj[index].total
+                        });
                     }
-                    this.forceUpdate();
+                    this.setState({'marksInfo':data});
                 });
             });
     }
     componentWillMount = () => {
         console.log('loading...');
-        AsyncStorage.getItem('token').then((token) => {
-            this.loadData(token);
-        })
+        AsyncStorage.multiGet(['token','userID']).then((data) => {
+            this.userbaseID=data[[data[0][0],data[1][0]].indexOf('userID')][1];
+            this.getStudentBaseId(data[[data[0][0],data[1][0]].indexOf('token')][1]);
+            /* this.getStudentBaseId(token);
+            this.loadData(token); */
+        });
     }
     render() {
+        console.log('rendering..');
+        
         return (
-            <ScrollView>
-                <View style={{ flex: 1, flexDirection: 'row', alignSelf: 'flex-start' }} >
-                    <TableColoumn data={this.Name} index={0} />
-                    <TableColoumn data={this.Written} index={1} />
-                    <TableColoumn data={this.practical} index={2} />
-                    <TableColoumn data={this.assignment} index={3} />
-                    <TableColoumn data={this.total} index={4} />
-                </View>
-            </ScrollView>
+            <View>
+            <Text adjustsFontSizeToFit={true}>The Marks Screen</Text>
+            <FlatList extraData={this.state}
+            keyExtractor={(item, index) => index.toString()}
+            data={this.state.marksInfo} 
+            renderItem={(item,index)=>
+                    <TableRow info={item.item} isHeader={item.index==0}/>
+            }  />
+        </View>
         );
     }
 }

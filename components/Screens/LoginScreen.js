@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { View } from 'react-native';
+import { View,Text, TouchableOpacity } from 'react-native';
 import { Email } from '../Email.js';
 import { Password } from '../Password.js';
 import { LoginButton } from "../LoginButton.js";
@@ -10,8 +10,7 @@ export default class LoginScreen extends Component {
         this.handleTextChange = this.handleTextChange.bind(this);
         this.reset = this.reset.bind(this);
     }
-    state = {
-    }
+    
     handleTextChange(fieldId, value) {
         this.setState({ [fieldId]: value });
     }

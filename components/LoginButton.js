@@ -21,11 +21,12 @@ export class LoginButton extends Component {
       response.json().then((JSON_Obj) => {
         if (JSON_Obj.success) {
           popToast('You are authenticated!');
-          this.keepCredentials(JSON_Obj.token, username);
+          console.log(JSON_Obj);
+          this.keepCredentials(JSON_Obj.token, username,JSON_Obj.user.id);
         }
         else
           if (JSON_Obj.message == 'No user found ...') {
-            popToast("you doesn't seems to exist in system");
+            popToast("you doesn't seems to exist in system ");
           }
           else if (JSON_Obj.message == 'Password doesn\'t match ...') {
             popToast("credentials doesn't match!");
@@ -47,7 +48,7 @@ export class LoginButton extends Component {
     }
 
   }
-  keepCredentials(token, username) {
+  keepCredentials(token, username ,userID) {
     var isCredentialsAvailable;
     AsyncStorage.getItem('username', (error, result) => {
       if (result == username)
@@ -57,17 +58,14 @@ export class LoginButton extends Component {
     }).then(
       //execute after boolean is updated....
       () => {
-        if (!isCredentialsAvailable)//keep only if not exist or user changed
-          AsyncStorage.setItem('token', token).then(() => {
-            //store fields one by one
-            AsyncStorage.setItem('username', username).then(() => {
-              console.log('successfully stored to storage')
-            });
+       // if (!isCredentialsAvailable)//keep only if not exist or user changed
+          AsyncStorage.multiSet([['token',token],['username',username],['userID',userID]]).then(()=>{
+            console.log('successfully stored to storage')
+          }).then(()=>{
+            this.props.navigator.navigate('Marks');//move to next screen...s  
           });
-          this.props.navigator.navigate('Marks');//move to next screen...s
       }
     )
-    console.log('boolean updated');
   }
   render() {
     const styles = this.props.style;
